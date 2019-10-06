@@ -1,0 +1,5 @@
+137.116.46.140
+[all:vars]
+ansible_connection=ssh
+ansible_user=ansible
+ansible_ssh_pass=Qazxsw@123

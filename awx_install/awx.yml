@@ -1,0 +1,6 @@
+---
+- name: Installing maven
+  hosts: all
+  become: true
+  roles:
+  - awx

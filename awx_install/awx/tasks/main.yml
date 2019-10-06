@@ -1,0 +1,63 @@
+---
+ 
+- name: Install libselinux as prerequisite for SELinux Ansible module
+  yum:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - libselinux-python
+    - libsemanage-python
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - git
+
+- name: add docker repo 
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  
+- name: Disable SELinux at next reboot
+  selinux:
+    state: disabled
+
+- name: Set SELinux in permissive mode until the machine is rebooted
+  command: setenforce 0
+  ignore_errors: true
+  changed_when: false
+
+- name: Install prerequisite for AWX installation
+  yum:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - docker-ce 
+    - docker-ce-cli 
+    - containerd.io
+    - git
+    - ansible
+
+- name: Make sure a service is running
+  systemd: state=started name=docker
+  
+- name: enable service docker
+  systemd:
+    name: docker
+    enabled: yes
+
+- name: PIP install
+  shell: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python get-pip.py
+
+- name: PIP install
+  shell: pip install docker-compose
+  
+- name: Copy file with owner and permissions
+  shell: cd /opt && git clone https://github.com/ansible/awx.git
+
+- name: install AWX
+  shell: cd /opt/awx/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml
+  
+- name: Wait for port 80 to become open on the host, don't start checking for 50 seconds
+  wait_for:
+    port: 80
+    delay: 50
+        
+
