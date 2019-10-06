@@ -46,8 +46,6 @@
 - name: PIP install
   shell: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python get-pip.py
 
-#- name: PIP install
-#  shell: pip install docker-compose
 
 - name: Install docker compose
   pip:
@@ -59,8 +57,6 @@
     state: directory
     mode: 0777
  
-#- name: Copy file with owner and permissions
-#  shell: cd /opt && git clone https://github.com/ansible/awx.git
 
 - name: Clone git AWX Repository
   git:
@@ -71,7 +67,7 @@
 - name: install AWX
   shell: cd /opt/setup/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml
   
-- name: Wait for port 80 to become open on the host, don't start checking for 50 seconds
+- name: Wait for port 80 to become open on the host, don't start checking for 30 seconds
   wait_for:
     port: 80
     delay: 30
