@@ -1,6 +1,6 @@
 ---
 - name: Deploy AWX
-  hosts: all
+  hosts: ing_env
   become: true
   roles:
   - awx
