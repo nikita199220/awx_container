@@ -1,6 +1,6 @@
 ---
 - name: Deploy AWX
-  hosts: 104.46.122.172
+  hosts: testvm10
   become: true
   roles:
   - awx
