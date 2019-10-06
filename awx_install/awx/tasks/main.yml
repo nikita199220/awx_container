@@ -12,15 +12,9 @@
     - lvm2
     - git
 
-#- name: add docker repo 
-#  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+- name: add docker repo 
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-- name: Add docker compose repository
-  yum_repository:
-    name: docker-ce
-    description: Add dockerce repo
-    baseurl: https://download.docker.com/linux/centos/docker-ce.repo
-  
 - name: Disable SELinux at next reboot
   selinux:
     state: disabled
@@ -58,22 +52,28 @@
 - name: Install docker compose
   pip:
     name: docker-compose
-  
+
+- name: Creates directory
+  file:
+    path: /opt/setup
+    state: directory
+    mode: 0777
+ 
 #- name: Copy file with owner and permissions
 #  shell: cd /opt && git clone https://github.com/ansible/awx.git
 
 - name: Clone git AWX Repository
   git:
     repo: https://github.com/ansible/awx.git
-    dest: /opt
+    dest: /opt/setup
     clone: yes
 
 - name: install AWX
-  shell: cd /opt/awx/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml
+  shell: cd /opt/setup/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml
   
 - name: Wait for port 80 to become open on the host, don't start checking for 50 seconds
   wait_for:
     port: 80
-    delay: 50
+    delay: 30
         
 
