@@ -1,4 +1,19 @@
 ---
+ 
+- name: Install libselinux as prerequisite for SELinux Ansible module
+  yum:
+    name: "{{item}}"
+    state: latest
+  with_items:
+    - libselinux-python
+    - libsemanage-python
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - git
+
+- name: add docker repo 
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 - name: Disable SELinux at next reboot
   selinux:
@@ -7,38 +22,7 @@
 - name: Set SELinux in permissive mode until the machine is rebooted
   command: setenforce 0
   ignore_errors: true
-  changed_when: false 
-
-- name: Install libselinux as prerequisite for SELinux Ansible module
-  yum:
-    name: "{{item}}"
-    state: latest
-  with_items:
-    - epel-release
-    - libselinux-python
-    - libsemanage-python
-    - yum-utils
-    - device-mapper-persistent-data
-    - lvm2
-    - git
-    - python-devel
-    - python-pip
-    - vim-enhanced
-    - gettext
-    - nodejs
-    - nodejs
-    - gcc-c++
-    - bzip2 
-    - git
-    - ansible
-
-
-- name: Install docker compose
-  pip:
-    name: docker-compose
-
-- name: Add docker CE Repo
-  shell: sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  changed_when: false
 
 - name: Install prerequisite for AWX installation
   yum:
@@ -48,6 +32,8 @@
     - docker-ce 
     - docker-ce-cli 
     - containerd.io
+    - git
+    - ansible
 
 - name: Make sure a service is running
   systemd: state=started name=docker
@@ -57,6 +43,20 @@
     name: docker
     enabled: yes
 
+- name: PIP install
+  shell: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python get-pip.py
+
+
+- name: Install docker compose
+  pip:
+    name: docker-compose
+
+- name: Creates directory
+  file:
+    path: /opt/setup
+    state: directory
+    mode: 0777
+ 
 
 - name: Clone git AWX Repository
   git:
@@ -64,48 +64,12 @@
     dest: /opt/setup
     clone: yes
 
-- name: Clone git AWX Repository
-  git:
-    repo: https://github.com/ansible/awx-logos.git
-    dest: /opt/setup/awx
-    clone: yes
-
-- name: Add the user 'awx'
-  user:
-    name: awx
-    state: present
-
-- name: "Password less user"
-  shell: sudo passwd -d awx
-
-- name: Create directory and give permission recursively
-  file:
-    path: /home/awx/awx_projects/test
-    state: directory
-    recurse: yes
-    owner: awx
-    group: awx
-    mode: 0755
-
-- name: Create directory and give permission recursively
-  file:
-    path: /home/awx/awx_projects/
-    state: directory
-    recurse: yes
-    owner: awx
-    group: awx
-    mode: 0755
-
-- name: Give permission
-  file:
-    path: /opt/setup
-    state: directory
-    mode: 0777
-
 - name: install AWX
-  shell: cd /opt/setup/installer && ansible-playbook -i inventory  install.yml
+  shell: cd /opt/setup/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml
   
 - name: Wait for port 80 to become open on the host, don't start checking for 30 seconds
   wait_for:
     port: 80
     delay: 30
+        
+
