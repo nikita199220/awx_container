@@ -12,8 +12,14 @@
     - lvm2
     - git
 
-- name: add docker repo 
-  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+#- name: add docker repo 
+#  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: Add docker compose repository
+  yum_repository:
+    name: docker-ce
+    description: Add dockerce repo
+    baseurl: https://download.docker.com/linux/centos/docker-ce.repo
   
 - name: Disable SELinux at next reboot
   selinux:
@@ -46,11 +52,21 @@
 - name: PIP install
   shell: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py" && python get-pip.py
 
-- name: PIP install
-  shell: pip install docker-compose
+#- name: PIP install
+#  shell: pip install docker-compose
+
+- name: Install docker compose
+  pip:
+    name: docker-compose
   
-- name: Copy file with owner and permissions
-  shell: cd /opt && git clone https://github.com/ansible/awx.git
+#- name: Copy file with owner and permissions
+#  shell: cd /opt && git clone https://github.com/ansible/awx.git
+
+- name: Clone git AWX Repository
+  git:
+    repo: https://github.com/ansible/awx.git
+    dest: /opt
+    clone: yes
 
 - name: install AWX
   shell: cd /opt/awx/installer && ansible-playbook -i inventory -e docker_registry_password=password install.yml

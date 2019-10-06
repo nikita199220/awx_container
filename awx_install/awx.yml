@@ -1,5 +1,5 @@
 ---
-- name: Installing maven
+- name: Deploy AWX
   hosts: all
   become: true
   roles:
