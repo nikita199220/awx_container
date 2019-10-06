@@ -1,6 +1,6 @@
 ---
 - name: Deploy AWX
-  hosts: ing_env
+  hosts: 104.46.122.172
   become: true
   roles:
   - awx
